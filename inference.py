@@ -44,17 +44,33 @@ SYSTEM_PROMPT = textwrap.dedent(
 def log_start(task: str, env: str, model: str) -> None:
     print(f"[START] task={task} env={env} model={model}", flush=True)
 
-def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str]) -> None:
-    error_val = error if error else "null"
-    done_val = str(done).lower()
+def log_step(step: int, action_obj: Action, obs_dict: dict, reward: float, total_reward: float, done: bool, error: Optional[str]) -> None:
+    error_val = error if error else "None"
+    
+    req_map = {}
+    if "pending_requests" in obs_dict:
+        for req in obs_dict["pending_requests"]:
+            if isinstance(req, dict):
+                req_map[req.get("request_id")] = req.get("blood_type", "Unknown")
+            else:
+                req_map[req.request_id] = req.blood_type
+            
+    allocs = []
+    if action_obj and hasattr(action_obj, "allocations"):
+        for a in action_obj.allocations:
+            btype = req_map.get(a.request_id, "Unknown")
+            allocs.append(f"{a.allocated_units} units of {btype} to {a.request_id}")
+    
+    action_str = " | ".join(allocs) if allocs else "No Allocations"
+    
     print(
-        f"[STEP] step={step} action={action} reward={reward:.2f} done={done_val} error={error_val}",
-        flush=True,
+        f"[STEP {step}] Total Reward: {total_reward:.2f} (Step: {reward:.2f}) | Done: {done} | Action: [{action_str}] | Error: {error_val}",
+        flush=True, # Added spaces and improved formatting for better readability
     )
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rewards_str}", flush=True)
+    total_reward = sum(rewards)
+    print(f"[END] success={str(success).lower()} steps={steps} score={score:.3f} total_reward={total_reward:.2f}", flush=True)
 
 def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
     return textwrap.dedent(
@@ -144,8 +160,9 @@ async def main() -> None:
             steps_taken = step
             last_obs = obs_dict
             last_reward = reward
+            total_current_reward = sum(rewards)
 
-            log_step(step=step, action=action_str, reward=reward, done=done, error=error_msg)
+            log_step(step=step, action_obj=action_obj, obs_dict=last_obs, reward=reward, total_reward=total_current_reward, done=done, error=error_msg)
 
             if done:
                 break
