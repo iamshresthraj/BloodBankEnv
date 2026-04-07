@@ -1,0 +1,22 @@
+spec_version: "1.0"
+name: "BloodBankEnv"
+description: "Simulates a hospital blood bank inventory. The agent manages perishable stock allocation, prioritizes emergency requests, ensures strict blood type compatibility, and handles random donation inflows."
+version: "1.0.0"
+
+runtime: "docker"
+app: "bloodbank.server:app"
+port: 8000
+
+tasks:
+  - id: "task_1_easy_basic_fulfillment"
+    name: "Basic Compatibility & Fulfillment"
+    description: "Match blood types correctly and fulfill basic requests."
+    difficulty: "easy"
+  - id: "task_2_medium_expiry_rotation"
+    name: "Expiry-Aware Stock Rotation"
+    description: "Minimize wastage by prioritizing blood units nearing expiry."
+    difficulty: "medium"
+  - id: "task_3_hard_adaptive_management"
+    name: "Adaptive Management Under Uncertainty"
+    description: "Balance stock across all 8 blood types while handling random donation inflows and prioritizing critical emergencies."
+    difficulty: "hard"
