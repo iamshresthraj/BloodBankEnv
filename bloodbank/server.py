@@ -262,7 +262,7 @@ HTML_CONTENT = """
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         
         #overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
