@@ -8,7 +8,6 @@ app_port: 8000
 ---
 
 <div align="center">
-  ![BloodBankEnv Banner](bloodbank_banner.png)
   
   # 🩸 BloodBankEnv
   **An OpenEnv RL Scenario for Healthcare Logistics Optimization**
