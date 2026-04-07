@@ -2,6 +2,7 @@ import asyncio
 import os
 import textwrap
 import json
+import re
 from typing import List, Optional
 
 from openai import OpenAI
@@ -18,7 +19,9 @@ MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 TASK_NAME = os.getenv("TASK_NAME", "task_3_hard_adaptive_management")
 BENCHMARK = os.getenv("BENCHMARK", "BloodBankEnv")
 
-MAX_STEPS = 30
+MAX_STEPS = 33
+MAX_TOTAL_REWARD = 100.0
+MAX_STEP_REWARD = MAX_TOTAL_REWARD / MAX_STEPS  # ~3.03
 TEMPERATURE = 0.7
 MAX_TOKENS = 500
 SUCCESS_SCORE_THRESHOLD = 0.6  # normalized score in [0, 1]
@@ -59,17 +62,34 @@ def log_step(step: int, action_obj: Action, obs_dict: dict, reward: float, total
     if action_obj and hasattr(action_obj, "allocations"):
         for a in action_obj.allocations:
             btype = req_map.get(a.request_id, "Unknown")
-            allocs.append(f"{a.allocated_units} units of {btype} to {a.request_id}")
+            allocs.append(f"[Req ID: {a.request_id}, Blood Type: {btype}, Units: {a.allocated_units}, Prioritize near expiry: {a.prioritize_near_expiry}]")
     
     action_str = " | ".join(allocs) if allocs else "No Allocations"
     
     print(
-        f"[STEP {step}] Total Reward: {total_reward:.2f} (Step: {reward:.2f}) | Done: {done} | Action: [{action_str}] | Error: {error_val}",
-        flush=True, # Added spaces and improved formatting for better readability
+        f"[STEP {step}] Step Reward: {reward:.2f} / {MAX_STEP_REWARD:.2f} | Cumulative: {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f} | Done: {done} | Allocations: {action_str} | Error: {error_val}",
+        flush=True,
     )
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     total_reward = sum(rewards)
+    print("\n" + "="*70, flush=True)
+    print("  BLOODBANKENV - FINAL EVALUATION REPORT", flush=True)
+    print("="*70, flush=True)
+    print(f"  {'Step':<8} {'Reward':>10} {'Max':>10} {'% Earned':>10}", flush=True)
+    print(f"  {'-'*8} {'-'*10} {'-'*10} {'-'*10}", flush=True)
+    for i, r in enumerate(rewards, 1):
+        pct = (r / MAX_STEP_REWARD) * 100 if MAX_STEP_REWARD > 0 else 0
+        print(f"  Step {i:<3} {r:>10.2f} {MAX_STEP_REWARD:>10.2f} {pct:>9.1f}%", flush=True)
+    print(f"  {'-'*8} {'-'*10} {'-'*10} {'-'*10}", flush=True)
+    overall_pct = (total_reward / MAX_TOTAL_REWARD) * 100
+    print(f"  {'TOTAL':<8} {total_reward:>10.2f} {MAX_TOTAL_REWARD:>10.0f} {overall_pct:>9.1f}%", flush=True)
+    print("="*70, flush=True)
+    print(f"  Grader Score : {score:.3f} / 1.000", flush=True)
+    print(f"  Total Reward : {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f}", flush=True)
+    print(f"  Steps Played : {steps} / {MAX_STEPS}", flush=True)
+    print(f"  Result       : {'PASS ✅' if success else 'FAIL ❌'}", flush=True)
+    print("="*70 + "\n", flush=True)
     print(f"[END] success={str(success).lower()} steps={steps} score={score:.3f} total_reward={total_reward:.2f}", flush=True)
 
 def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
@@ -166,11 +186,12 @@ async def main() -> None:
 
             rewards.append(reward)
             steps_taken = step
+            prev_obs = last_obs
             last_obs = obs_dict
             last_reward = reward
             total_current_reward = sum(rewards)
 
-            log_step(step=step, action_obj=action_obj, obs_dict=last_obs, reward=reward, total_reward=total_current_reward, done=done, error=error_msg)
+            log_step(step=step, action_obj=action_obj, obs_dict=prev_obs, reward=reward, total_reward=total_current_reward, done=done, error=error_msg)
 
             if done:
                 break

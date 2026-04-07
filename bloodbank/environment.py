@@ -9,7 +9,7 @@ class BloodBankEnv:
         self.episode_id = str(uuid.uuid4())
         self.step_count = 0
         self.current_day = 1
-        self.max_steps = 30
+        self.max_steps = 33
         self.is_done = False
         
         # Indian Subcontinent Blood Type Probabilities
@@ -78,11 +78,24 @@ class BloodBankEnv:
         # Exact match (strict hospital policy for standard cases)
         return requested == allocated
 
+    # Maximum total reward across the entire episode
+    MAX_TOTAL_REWARD = 100.0
+
+    @property
+    def max_step_reward(self) -> float:
+        return self.MAX_TOTAL_REWARD / self.max_steps  # ~3.33 per step
+
     def step(self, action: Action) -> Tuple[Observation, Reward, bool, Dict[str, Any]]:
         self.step_count += 1
-        reward_val = -0.5 # Small time penalty to encourage action
         
+        # --- 100 Point System ---
+        # Agent starts each step with the full step budget (~3.33 pts).
+        # Penalties deduct from it. The step reward is clamped to [0, max_step_reward].
+        step_budget = self.max_step_reward
+        deductions = 0.0
+
         # 1. Process Allocations
+        allocations_made = 0
         for alloc in action.allocations:
             req = next((r for r in self.requests if r.request_id == alloc.request_id), None)
             if not req:
@@ -103,19 +116,22 @@ class BloodBankEnv:
                 # Match logic - penalize if agent forces wrong types
                 if not self.is_compatible(req.blood_type, req.blood_type):
                     self.mismatches += units_to_take
-                    reward_val -= 50.0  # Life-critical error penalty
+                    deductions += 2.0  # Heavy deduction for mismatch
                 else:
                     self.inventory[req.blood_type] = self.inventory[req.blood_type][units_to_take:]
                     req.units_needed -= units_to_take
-                    reward_val += 2.0 * units_to_take # Dense reward
+                    allocations_made += units_to_take
 
                     if req.priority == Priority.EMERGENCY:
                         self.emergency_fulfilled += 1
-                        reward_val += 10.0 # Fast emergency handling
                 
                 if req.units_needed <= 0:
                     self.fulfilled_requests += 1
                     self.requests.remove(req)
+
+        # Deduct if no allocations were made at all (idle penalty)
+        if allocations_made == 0 and len(self.requests) > 0:
+            deductions += 1.0
 
         # 2. Advance time: age inventory, track wastage
         for bt in list(self.inventory.keys()):
@@ -123,7 +139,7 @@ class BloodBankEnv:
             for d in self.inventory[bt]:
                 if d - 1 <= 0:
                     self.wasted_units += 1
-                    reward_val -= 2.0 # Penalty for waste
+                    deductions += 0.3  # Deduction per wasted unit
                 else:
                     new_inv.append(d - 1)
             self.inventory[bt] = new_inv
@@ -132,9 +148,11 @@ class BloodBankEnv:
         for req in self.requests:
             req.days_waiting += 1
             if req.priority == Priority.EMERGENCY:
-                reward_val -= 10.0 # Severe penalty for delayed emergencies
+                deductions += 0.5  # Heavier deduction for delayed emergencies
+            elif req.priority == Priority.URGENT:
+                deductions += 0.2
             else:
-                reward_val -= 1.0
+                deductions += 0.1
 
         # 4. Stochastic events: Generate new patient requests
         num_new_reqs = random.randint(1, 4)
@@ -163,9 +181,16 @@ class BloodBankEnv:
         self.current_day += 1
         if self.step_count >= self.max_steps:
             self.is_done = True
+        
+        # Clamp step reward: never negative, never above step budget
+        reward_val = max(0.0, step_budget - deductions)
+        reward_val = min(reward_val, step_budget)
             
         obs = self._get_observation(donations)
-        reward = Reward(value=reward_val, metrics={"fulfilled": self.fulfilled_requests})
+        reward = Reward(value=reward_val, metrics={
+            "fulfilled": self.fulfilled_requests,
+            "max_step_reward": self.max_step_reward
+        })
         
         return obs, reward, self.is_done, {}
 
