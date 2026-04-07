@@ -69,29 +69,39 @@ def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
     ).strip()
 
 def get_model_action(client: OpenAI, step: int, obs: dict, last_reward: float) -> tuple[Action, str]:
+    import time
     user_prompt = build_user_prompt(step, obs, last_reward)
     
-    try:
-        completion = client.chat.completions.create(
-            model=MODEL_NAME,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=TEMPERATURE,
-            max_tokens=MAX_TOKENS,
-            stream=False,
-            response_format={"type": "json_object"}
-        )
-        text = (completion.choices[0].message.content or "").strip()
-        parsed_json = json.loads(text)
-        action_obj = Action(**parsed_json)
-        return action_obj, json.dumps(parsed_json)
-    except Exception as exc:
-        print(f"[DEBUG] Model generation failed, falling back to dummy: {exc}", flush=True)
-        # Fallback to dummy action to prevent crash
-        dummy = Action(allocations=[])
-        return dummy, json.dumps(dummy.dict())
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            completion = client.chat.completions.create(
+                model=MODEL_NAME,
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=TEMPERATURE,
+                max_tokens=MAX_TOKENS,
+                stream=False,
+                response_format={"type": "json_object"}
+            )
+            text = (completion.choices[0].message.content or "").strip()
+            parsed_json = json.loads(text)
+            action_obj = Action(**parsed_json)
+            return action_obj, json.dumps(parsed_json)
+        except Exception as exc:
+            exc_str = str(exc)
+            if "429" in exc_str or "quota" in exc_str.lower() or "exhausted" in exc_str.lower():
+                print(f"[DEBUG] Rate limit hit (attempt {attempt+1}/{max_retries}). Sleeping for 60 seconds before retrying...", flush=True)
+                time.sleep(60)
+                continue
+            print(f"[DEBUG] Model generation failed, falling back to dummy: {exc}", flush=True)
+            break
+
+    # Fallback to dummy action to prevent crash
+    dummy = Action(allocations=[])
+    return dummy, json.dumps(dummy.dict())
 
 async def main() -> None:
     client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
