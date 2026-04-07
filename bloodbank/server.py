@@ -244,6 +244,9 @@ HTML_CONTENT = """
 </html>
 """
 
+class ResetRequest(BaseModel):
+    task_id: str
+
 class StepRequest(BaseModel):
     episode_id: str
     action: Action
