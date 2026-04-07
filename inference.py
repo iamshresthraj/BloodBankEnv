@@ -86,6 +86,7 @@ def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
 
 def get_model_action(client: OpenAI, step: int, obs: dict, last_reward: float) -> tuple[Action, str]:
     import time
+    import re
     user_prompt = build_user_prompt(step, obs, last_reward)
     
     max_retries = 3
@@ -99,10 +100,16 @@ def get_model_action(client: OpenAI, step: int, obs: dict, last_reward: float) -
                 ],
                 temperature=TEMPERATURE,
                 max_tokens=MAX_TOKENS,
-                stream=False,
-                response_format={"type": "json_object"}
+                stream=False
+                # Removed response_format={"type": "json_object"} for broader model compatibility
             )
             text = (completion.choices[0].message.content or "").strip()
+            
+            # Robust JSON extraction: look for the first '{' and last '}'
+            json_match = re.search(r"(\{.*\})", text, re.DOTALL)
+            if json_match:
+                text = json_match.group(1)
+            
             parsed_json = json.loads(text)
             action_obj = Action(**parsed_json)
             return action_obj, json.dumps(parsed_json)
@@ -112,8 +119,9 @@ def get_model_action(client: OpenAI, step: int, obs: dict, last_reward: float) -
                 print(f"[DEBUG] Rate limit hit (attempt {attempt+1}/{max_retries}). Sleeping for 60 seconds before retrying...", flush=True)
                 time.sleep(60)
                 continue
-            print(f"[DEBUG] Model generation failed, falling back to dummy: {exc}", flush=True)
-            break
+            print(f"[DEBUG] Model generation failed (Attempt {attempt+1}): {exc}", flush=True)
+            if attempt == max_retries - 1:
+                break
 
     # Fallback to dummy action to prevent crash
     dummy = Action(allocations=[])
