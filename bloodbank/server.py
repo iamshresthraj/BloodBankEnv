@@ -285,7 +285,7 @@ HTML_CONTENT = """
                 <option value="task_2_medium_expiry_rotation">Task 2: Medium (Expiry Rotation)</option>
                 <option value="task_3_hard_adaptive_management" selected>Task 3: Hard (Adaptive Management)</option>
             </select>
-            <button class="btn btn-secondary" onclick="resetEnv()">Reset / Start</button>
+            <button type="button" class="btn btn-secondary" onclick="resetEnv()">Reset / Start</button>
         </div>
     </div>
 
@@ -339,7 +339,7 @@ HTML_CONTENT = """
 }</textarea>
             
             <div style="margin-top: 15px;">
-                <button class="btn btn-primary" style="width: 100%; border-radius: 8px;" onclick="stepEnv()" id="stepBtn" disabled>▶ Send Step Action</button>
+                <button type="button" class="btn btn-primary" style="width: 100%; border-radius: 8px;" onclick="stepEnv()" id="stepBtn" disabled>▶ Send Step Action</button>
             </div>
 
             <div class="console-log" id="consoleLog">
@@ -363,8 +363,9 @@ HTML_CONTENT = """
         async function resetEnv() {
             setLoading(true);
             const task_id = document.getElementById('taskSelect').value;
+            console.log("Resetting environment for task:", task_id);
             try {
-                const res = await fetch('/reset', {
+                const res = await fetch('reset', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ task_id })
@@ -403,7 +404,7 @@ HTML_CONTENT = """
             }
 
             try {
-                const res = await fetch('/step', {
+                const res = await fetch('step', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
