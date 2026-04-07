@@ -8,7 +8,7 @@ app_port: 8000
 ---
 
 <div align="center">
-  <img src="bloodbank_banner.png" alt="BloodBankEnv Banner" width="100%" style="border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+  ![BloodBankEnv Banner](bloodbank_banner.png)
   
   # 🩸 BloodBankEnv
   **An OpenEnv RL Scenario for Healthcare Logistics Optimization**
@@ -31,10 +31,10 @@ In many parts of the world, specifically in the Indian Subcontinent, blood short
 **BloodBankEnv** is an OpenEnv-compliant reinforcement learning (RL) and Large Language Model (LLM) environment designed to train and evaluate intelligent agents on this critical healthcare logistics problem. 
 
 Agents operating in this environment must naturally balance competing priorities:
-- 🚨 **Prioritizing critical emergencies** and urgent patient requests over routine needs.
-- 🎲 **Managing stochastic, unpredictable inflows** from donation camps across 8 different blood types.
-- 🧬 **Ensuring strict type compatibility** to avoid life-fatal transfusion mismatches.
-- ♻️ **Implementing FIFO (First-In-First-Out) rotations** to minimize blood expiration and resource wastage.
+- **Prioritizing critical emergencies** and urgent patient requests over routine needs.
+- **Managing stochastic, unpredictable inflows** from donation camps across 8 different blood types.
+- **Ensuring strict type compatibility** to avoid life-fatal transfusion mismatches.
+- **Implementing FIFO (First-In-First-Out) rotations** to minimize blood expiration and resource wastage.
 
 ---
 
@@ -48,11 +48,11 @@ graph TD
     classDef sys fill:#d90429,stroke:#ef233c,stroke-width:2px,color:#fff
     classDef external fill:#8d99ae,stroke:#2b2d42,stroke-width:2px,color:#fff
 
-    A[🤖 AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::sys
+    A[AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::sys
     B -->|Provides JSON Action| C{BloodBankEnv Engine}:::sys
-    C -->|Validates Allocations| D[📦 Inventory Manager]:::sys
-    D -->|Executes Dispatch| E(🏥 Hospital Requesters):::external
-    C -->|Tracks Performance Metrics| F[⚖️ Grader System]:::sys
+    C -->|Validates Allocations| D[Inventory Manager]:::sys
+    D -->|Executes Dispatch| E(Hospital Requesters):::external
+    C -->|Tracks Performance Metrics| F[Grader System]:::sys
     F -->|Calculates Step Reward| B
 ```
 
@@ -80,7 +80,7 @@ To successfully allocate resources without triggering severe penalties, agents m
 
 ## 🧠 Environment Mechanics
 
-### 👁️ State (Observation Space)
+### State (Observation Space)
 At each step (representing a single day), the agent observes the current state of the system modeled as a standard JSON dictionary.
 
 <details>
@@ -121,7 +121,7 @@ At each step (representing a single day), the agent observes the current state o
 
 </details>
 
-### 🎯 Action Space (Allocations)
+### Action Space (Allocations)
 The AI agent must process the observation and return a **strict JSON** representing its dispatch allocations for that day:
 
 ```json
@@ -149,12 +149,12 @@ Each step, the agent starts with the full step budget. Penalties are deducted ba
 
 | Deduction Type | Penalty Amount | Trigger Condition |
 | :--- | :--- | :--- |
-| 🚫 **Idle (No Action)** | `-1.0 pts` | Agent makes no allocations despite having pending requests. |
-| ⏳ **Emergency Delay** | `-0.5 pts / req` | An unfulfilled `emergency` request must wait another day. |
-| ⏳ **Urgent Delay** | `-0.2 pts / req` | An unfulfilled `urgent` request must wait another day. |
-| ⏳ **Routine Delay** | `-0.1 pts / req` | An unfulfilled `routine` request must wait another day. |
-| 🗑️ **Wasted Unit** | `-0.3 pts / unit` | A blood unit reaches 0 `days_to_expiry` and is destroyed. |
-| 💀 **Blood Mismatch** | `-2.0 pts` | Incorrect allocation violating the compatibility matrix. |
+| **Idle (No Action)** | `-1.0 pts` | Agent makes no allocations despite having pending requests. |
+| **Emergency Delay** | `-0.5 pts / req` | An unfulfilled `emergency` request must wait another day. |
+| **Urgent Delay** | `-0.2 pts / req` | An unfulfilled `urgent` request must wait another day. |
+| **Routine Delay** | `-0.1 pts / req` | An unfulfilled `routine` request must wait another day. |
+| **Wasted Unit** | `-0.3 pts / unit` | A blood unit reaches 0 `days_to_expiry` and is destroyed. |
+| **Blood Mismatch** | `-2.0 pts` | Incorrect allocation violating the compatibility matrix. |
 
 > [!TIP]
 > **The Perfect Run:** A flawless agent that fulfills all valid requests promptly, wastes zero blood units, and makes no compatibility errors will earn the full **100 / 100** grading points.
@@ -167,9 +167,9 @@ BloodBankEnv supports multiple difficulties, each modifying how the Grader weigh
 
 | Track Name | Endpoint Task ID | Primary Objective | Grader Focus Areas |
 |:---|:---|:---|:---|
-| 🟢 **Easy** | `task_1_easy_basic_fulfillment` | Basic fulfillment and type adherence. | Fulfillment ratios. Type mismatch logic is minimally tested under stress. |
-| 🟡 **Medium**| `task_2_medium_expiry_rotation` | Expiry-Aware Stock Rotation. | Actively scrutinizes `expiry_utilization` and minimal `waste_rate`. |
-| 🔴 **Hard** | `task_3_hard_adaptive_management` | Adaptive Management Under Uncertainty. | Heavily weights `emergency_rate` success while balancing long-term supply against unpredictable demand spikes. |
+| **Easy** | `task_1_easy_basic_fulfillment` | Basic fulfillment and type adherence. | Fulfillment ratios. Type mismatch logic is minimally tested under stress. |
+| **Medium**| `task_2_medium_expiry_rotation` | Expiry-Aware Stock Rotation. | Actively scrutinizes `expiry_utilization` and minimal `waste_rate`. |
+| **Hard** | `task_3_hard_adaptive_management` | Adaptive Management Under Uncertainty. | Heavily weights `emergency_rate` success while balancing long-term supply against unpredictable demand spikes. |
 
 ---
 
