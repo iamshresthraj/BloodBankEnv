@@ -13,472 +13,233 @@ HTML_CONTENT = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BloodBankEnv | Interactive Dashboard</title>
+    <title>BloodBankEnv | OpenEnv Hackathon</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
         
         :root {
-            --bg-color: #0b0f14;
-            --panel-bg: rgba(20, 25, 33, 0.7);
-            --card-bg: rgba(30, 36, 46, 0.8);
-            --text-primary: #f2f5f8;
+            --bg-color: #0d0f12;
+            --accent-glow: rgba(220, 20, 60, 0.6);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text-primary: #f2f2f2;
             --text-secondary: #a0aab2;
             --blood-red: #e63946;
-            --neon-red: #ff4b4b;
-            --neon-pink: #ff758f;
-            --success: #2ecc71;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --emergency: #ff3333;
-            --urgent: #ff9933;
-            --routine: #3399ff;
         }
-
-        * { box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             margin: 0;
-            padding: 20px;
-            background-image: 
-                radial-gradient(circle at 15% 10%, rgba(220, 20, 60, 0.1), transparent 30%),
-                radial-gradient(circle at 85% 80%, rgba(220, 20, 60, 0.08), transparent 30%);
-            min-height: 100vh;
+            padding: 0;
             display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 10px 20px;
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            margin-bottom: 20px;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(220, 20, 60, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(220, 20, 60, 0.05), transparent 25%);
         }
 
-        .header h1 {
-            margin: 0;
-            font-size: 1.8rem;
+        .container {
+            max-width: 900px;
+            padding: 40px;
+            border-radius: 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 3rem;
             font-weight: 800;
-            background: linear-gradient(90deg, var(--neon-red), var(--neon-pink));
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff4b4b, #ff9090);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .controls {
+        p.subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 50px;
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 30px;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 8px #2ecc71;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: left;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            border-color: rgba(220, 20, 60, 0.3);
+        }
+
+        .card h3 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .btn-group {
+            margin-top: 40px;
             display: flex;
             gap: 15px;
-            align-items: center;
+            justify-content: center;
         }
 
-        select {
-            background: var(--card-bg);
-            color: white;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            outline: none;
-            cursor: pointer;
-        }
-
-        button {
-            padding: 10px 20px;
+        .btn {
+            padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
-            border: none;
-            cursor: pointer;
+            text-decoration: none;
             transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--blood-red), var(--neon-pink));
+            background: var(--blood-red);
             color: white;
             box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.5);
+            background: #ff4b4b;
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
+            transform: scale(1.02);
         }
 
         .btn-secondary {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
         }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: none !important;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            flex-grow: 1;
-        }
-
-        .panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            backdrop-filter: blur(10px);
-        }
-
-        .panel h2 {
-            margin-top: 0;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
-
-        .badge {
-            font-size: 0.8rem;
-            padding: 3px 8px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .metrics-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .metric-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 10px 15px;
-            border-radius: 8px;
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        .metric-card.score { border-color: var(--success); }
-        .metric-card.penalty { border-color: var(--blood-red); }
-
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-top: 5px;
-        }
-
-        .state-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            overflow-y: auto;
-            max-height: 50vh;
-        }
-
-        .section-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .section-box h3 {
-            margin-top: 0;
-            font-size: 1rem;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
-        }
-
-        .req-item, .inv-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            border-left: 3px solid var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .req-emergency { border-left-color: var(--emergency); }
-        .req-urgent { border-left-color: var(--urgent); }
-        .req-routine { border-left-color: var(--routine); }
         
-        .inv-expiring { border-left-color: var(--blood-red); }
-
-        textarea {
-            width: 100%;
-            height: 250px;
-            background: #0f1218;
+        .code-block {
+            background: #1a1c21;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
             color: #61dafb;
-            font-family: 'Fira Code', monospace;
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-            resize: none;
-            outline: none;
-        }
-
-        textarea:focus {
-            border-color: var(--neon-pink);
-            box-shadow: 0 0 10px rgba(255, 117, 143, 0.2);
-        }
-
-        .console-log {
-            background: #000;
-            color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-            height: 200px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
             margin-top: 15px;
-        }
-        
-        .log-entry { margin-bottom: 5px; }
-        .log-error { color: var(--blood-red); }
-        .log-success { color: var(--success); }
-        .log-info { color: #61dafb; }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-color); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-
-        .hidden { display: none !important; }
-        
-        #overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 999;
-            display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 1.5rem; font-weight: bold;
-            backdrop-filter: blur(5px);
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 <body>
-
-    <div id="overlay" class="hidden">Processing...</div>
-
-    <div class="header">
+    <div class="container">
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            Environment API Online
+        </div>
+        
         <h1>🩸 BloodBankEnv</h1>
-        <div class="controls">
-            <select id="taskSelect">
-                <option value="task_1_easy_basic_fulfillment">Task 1: Easy (Basic Fulfillment)</option>
-                <option value="task_2_medium_expiry_rotation">Task 2: Medium (Expiry Rotation)</option>
-                <option value="task_3_hard_adaptive_management" selected>Task 3: Hard (Adaptive Management)</option>
-            </select>
-            <button type="button" class="btn btn-secondary" onclick="resetEnv()">Reset / Start</button>
+        <p class="subtitle">An OpenEnv RL Simulation for Emergency Blood Bank Logistics</p>
+
+        <div class="grid">
+            <div class="card">
+                <h3>🏥 Environment State</h3>
+                <p>Monitors blood type inventory, expiry rotations, patient requests (Routine to Emergency), and stochastic donation inflows.</p>
+            </div>
+            <div class="card">
+                <h3>⚖️ Auto Allocations</h3>
+                <p>LLM Agents allocate blood to patients while maintaining strict compatibility and preventing life-threatening mismatches.</p>
+            </div>
+            <div class="card">
+                <h3>🏆 Action Rewards</h3>
+                <p>Agents are graded on fulfillment rate, minimal blood expiration (wastage), and prioritized emergency response times.</p>
+            </div>
+        </div>
+
+        <div style="text-align: left; margin-top: 30px;">
+            <p style="color: var(--text-secondary); margin-bottom: 5px;"><strong>API Endpoints Active:</strong></p>
+            <div class="code-block">
+                POST /reset - Initialize episode state<br>
+                POST /step - Submit agent observation actions<br>
+                GET /state/{id} - Retrieve episodic grading state
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="https://github.com/iamshresthraj/BloodBankEnv" target="_blank" class="btn btn-primary">
+                View Source
+            </a>
+            <a href="/docs" target="_blank" class="btn btn-secondary">
+                View API Docs
+            </a>
         </div>
     </div>
-
-    <div class="main-grid">
-        <!-- LEFT PANEL: State View -->
-        <div class="panel">
-            <h2>🌍 Environment State <span class="badge" id="dayBadge">Step 0</span></h2>
-            
-            <div class="metrics-row">
-                <div class="metric-card score">
-                    <div style="font-size: 0.8rem; color: #888;">Score</div>
-                    <div class="metric-value" id="scoreVal">0.000</div>
-                </div>
-                <div class="metric-card penalty">
-                    <div style="font-size: 0.8rem; color: #888;">Mismatches</div>
-                    <div class="metric-value" id="mismatchVal">0</div>
-                </div>
-                <div class="metric-card penalty">
-                    <div style="font-size: 0.8rem; color: #888;">Wasted Units</div>
-                    <div class="metric-value" id="wasteVal">0</div>
-                </div>
-            </div>
-
-            <div class="state-container">
-                <div class="section-box">
-                    <h3>🏥 Pending Requests</h3>
-                    <div id="requestsList" style="font-size: 0.9rem; color: #a0aab2;"><i>Run reset to fetch requests...</i></div>
-                </div>
-                <div>
-                    <div class="section-box">
-                        <h3>📦 Inventory Stocks</h3>
-                        <div id="inventoryList" style="font-size: 0.9rem; color: #a0aab2;"><i>Run reset to view inventory...</i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: Action Input -->
-        <div class="panel">
-            <h2>🤖 Artificial Intelligence Action</h2>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0; margin-bottom: 15px;">Instruct the agent by providing JSON distributions below.</p>
-            
-            <textarea id="actionJson">{
-  "allocations": [
-    {
-      "request_id": "REQ_X",
-      "allocated_units": 1,
-      "prioritize_near_expiry": true
-    }
-  ]
-}</textarea>
-            
-            <div style="margin-top: 15px;">
-                <button type="button" class="btn btn-primary" style="width: 100%; border-radius: 8px;" onclick="stepEnv()" id="stepBtn" disabled>▶ Send Step Action</button>
-            </div>
-
-            <div class="console-log" id="consoleLog">
-                <div class="log-info">> Waiting for initialization via Reset...</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let currentEpisodeId = null;
-
-        function log(message, type = 'info') {
-            const consoleEl = document.getElementById('consoleLog');
-            const entry = document.createElement('div');
-            entry.className = `log-entry log-${type}`;
-            entry.innerText = `> ${message}`;
-            consoleEl.appendChild(entry);
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-        }
-
-        async function resetEnv() {
-            setLoading(true);
-            const task_id = document.getElementById('taskSelect').value;
-            console.log("Resetting environment for task:", task_id);
-            try {
-                const res = await fetch('reset', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task_id })
-                });
-                const data = await res.json();
-                
-                if (!res.ok) throw new Error(JSON.stringify(data));
-                
-                currentEpisodeId = data.state.episode_id;
-                log(`Environment reset successfully. Episode ID: ${currentEpisodeId}`, 'success');
-                
-                updateUI(data.observation, data.state);
-                
-                document.getElementById('stepBtn').disabled = false;
-                document.getElementById('actionJson').value = '{\n  "allocations": [\n  ]\n}';
-                
-            } catch (err) {
-                console.error("ResetEnv Error:", err);
-                log(`Reset Failed: ${err.message}`, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        async function stepEnv() {
-            if (!currentEpisodeId) return alert('Initialize first!');
-            
-            setLoading(true);
-            const actionText = document.getElementById('actionJson').value;
-            let actionData;
-            try {
-                actionData = JSON.parse(actionText);
-            } catch (e) {
-                setLoading(false);
-                return log('Invalid JSON provided.', 'error');
-            }
-
-            try {
-                const res = await fetch('step', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        episode_id: currentEpisodeId,
-                        action: actionData
-                    })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(JSON.stringify(data));
-                
-                const rewardVal = data.reward.value;
-                const done = data.done;
-                
-                log(`Step executed. Reward: ${rewardVal.toFixed(2)}${done ? ' [EPISODE DONE]' : ''}`, rewardVal < 0 ? 'error' : 'success');
-                
-                updateUI(data.observation, data.state);
-
-                if (done) {
-                    document.getElementById('stepBtn').disabled = true;
-                    log(`Episode Completed. Final Grader Score: ${data.state.score.toFixed(3)}`, 'success');
-                }
-            } catch (err) {
-                console.error("StepEnv Error:", err);
-                log(`Step Failed: ${err.message}`, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        function updateUI(obs, state) {
-            document.getElementById('scoreVal').innerText = state.score.toFixed(3);
-            document.getElementById('mismatchVal').innerText = obs.total_mismatches_so_far;
-            document.getElementById('wasteVal').innerText = obs.total_wasted_units_so_far;
-            document.getElementById('dayBadge').innerText = `Step ${obs.current_day}`;
-
-            const reqList = document.getElementById('requestsList');
-            reqList.innerHTML = '';
-            if (obs.pending_requests.length === 0) {
-                reqList.innerHTML = '<i>No pending requests.</i>';
-            } else {
-                obs.pending_requests.forEach(req => {
-                    const cls = `req-${String(req.priority).toLowerCase()}`;
-                    reqList.innerHTML += `<div class="req-item ${cls}">
-                        <strong>${req.request_id}</strong> - <b style="color:white">${req.blood_type}</b>
-                        <br>Need: ${req.units_needed} units | Priority: ${req.priority}
-                        <br><span style="font-size:0.8rem; color:#888;">Wait: ${req.days_waiting} days</span>
-                    </div>`;
-                });
-            }
-
-            const invList = document.getElementById('inventoryList');
-            invList.innerHTML = '';
-            let totalItems = 0;
-            for (const [btype, batches] of Object.entries(obs.inventory)) {
-                batches.forEach(b => {
-                    totalItems++;
-                    const expClass = b.days_to_expiry <= 3 ? 'inv-expiring' : '';
-                    invList.innerHTML += `<div class="inv-item ${expClass}">
-                        <strong>${btype}</strong> - ${b.count} units
-                        <br><span style="font-size:0.8rem; color:#888;">Expires in ${b.days_to_expiry} days</span>
-                    </div>`;
-                });
-            }
-            if (totalItems === 0) {
-                invList.innerHTML = '<i>Inventory is empty.</i>';
-            }
-        }
-
-        function setLoading(isLoading) {
-            const overlay = document.getElementById('overlay');
-            if (isLoading) overlay.classList.remove('hidden');
-            else overlay.classList.add('hidden');
-        }
-    </script>
 </body>
 </html>
 """
@@ -496,10 +257,7 @@ def reset(req: ResetRequest):
     obs = env.reset()
     envs[env.episode_id] = env
     state = env.state()
-    return {
-        "observation": obs.model_dump() if hasattr(obs, "model_dump") else obs.dict(),
-        "state": state.model_dump() if hasattr(state, "model_dump") else state.dict()
-    }
+    return {"observation": obs.dict(), "state": state.dict()}
 
 @app.post("/step")
 def step(req: StepRequest):
@@ -510,10 +268,10 @@ def step(req: StepRequest):
     obs, reward, done, info = env.step(req.action)
     state = env.state()
     return {
-        "observation": obs.model_dump() if hasattr(obs, "model_dump") else obs.dict(),
-        "reward": reward.model_dump() if hasattr(reward, "model_dump") else reward.dict(),
+        "observation": obs.dict(),
+        "reward": reward.dict(),
         "done": done,
-        "state": state.model_dump() if hasattr(state, "model_dump") else state.dict()
+        "state": state.dict()
     }
 
 @app.get("/state/{episode_id}")
@@ -521,8 +279,7 @@ def get_state(episode_id: str):
     env = envs.get(episode_id)
     if not env:
         raise HTTPException(status_code=404, detail="Episode not found")
-    state = env.state()
-    return state.model_dump() if hasattr(state, "model_dump") else state.dict()
+    return env.state().dict()
 
 @app.get("/")
 def read_root():
