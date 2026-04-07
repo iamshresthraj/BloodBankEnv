@@ -42,3 +42,10 @@ def get_state(episode_id: str):
     if not env:
         raise HTTPException(status_code=404, detail="Episode not found")
     return env.state().dict()
+
+@app.get("/")
+def read_root():
+    return {
+        "status": "Online",
+        "message": "🩸 BloodBankEnv OpenEnv is running successfully! Use /reset and /step endpoints to interact."
+    }
