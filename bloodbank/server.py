@@ -382,9 +382,11 @@ HTML_CONTENT = """
                 document.getElementById('actionJson').value = '{\n  "allocations": [\n  ]\n}';
                 
             } catch (err) {
+                console.error("ResetEnv Error:", err);
                 log(`Reset Failed: ${err.message}`, 'error');
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
 
         async function stepEnv() {
@@ -424,9 +426,11 @@ HTML_CONTENT = """
                     log(`Episode Completed. Final Grader Score: ${data.state.score.toFixed(3)}`, 'success');
                 }
             } catch (err) {
+                console.error("StepEnv Error:", err);
                 log(`Step Failed: ${err.message}`, 'error');
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         }
 
         function updateUI(obs, state) {
@@ -491,7 +495,10 @@ def reset(req: ResetRequest):
     obs = env.reset()
     envs[env.episode_id] = env
     state = env.state()
-    return {"observation": obs.dict(), "state": state.dict()}
+    return {
+        "observation": obs.model_dump() if hasattr(obs, "model_dump") else obs.dict(),
+        "state": state.model_dump() if hasattr(state, "model_dump") else state.dict()
+    }
 
 @app.post("/step")
 def step(req: StepRequest):
@@ -502,10 +509,10 @@ def step(req: StepRequest):
     obs, reward, done, info = env.step(req.action)
     state = env.state()
     return {
-        "observation": obs.dict(),
-        "reward": reward.dict(),
+        "observation": obs.model_dump() if hasattr(obs, "model_dump") else obs.dict(),
+        "reward": reward.model_dump() if hasattr(reward, "model_dump") else reward.dict(),
         "done": done,
-        "state": state.dict()
+        "state": state.model_dump() if hasattr(state, "model_dump") else state.dict()
     }
 
 @app.get("/state/{episode_id}")
@@ -513,7 +520,8 @@ def get_state(episode_id: str):
     env = envs.get(episode_id)
     if not env:
         raise HTTPException(status_code=404, detail="Episode not found")
-    return env.state().dict()
+    state = env.state()
+    return state.model_dump() if hasattr(state, "model_dump") else state.dict()
 
 @app.get("/")
 def read_root():
