@@ -1,3 +1,12 @@
+---
+title: BloodBankEnv
+emoji: 🩸
+colorFrom: red
+colorTo: pink
+sdk: docker
+app_port: 8000
+---
+
 # 🩸 BloodBankEnv - OpenEnv Hackathon 2026
 
 ## Motivation & Real-World Impact
