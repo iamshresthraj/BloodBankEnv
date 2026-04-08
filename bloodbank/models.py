@@ -36,11 +36,14 @@ class Observation(BaseModel):
     current_day: int
     total_mismatches_so_far: int
     total_wasted_units_so_far: int
+    data_source: Optional[str] = None  # e.g. "eRakt Kosh - Delhi (15 blood banks)"
+    is_live_data: bool = False
 
 class Allocation(BaseModel):
     request_id: str
     allocated_units: int  # Number of units allocated
     prioritize_near_expiry: bool = True # Strategy flag for the agent
+    allocated_blood_type: Optional[BloodType] = None # The specific blood type to dispense
 
 class Action(BaseModel):
     allocations: List[Allocation]
@@ -55,3 +58,4 @@ class State(BaseModel):
     step_count: int
     is_done: bool
     score: float  # [0.0, 1.0] calculated by the specific task grader
+    data_source: Optional[str] = None  # Attribution for live data origin

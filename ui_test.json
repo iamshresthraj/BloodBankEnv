@@ -1,0 +1,361 @@
+{
+  "observation": {
+    "inventory": {
+      "O-": [
+        {
+          "days_to_expiry": 13,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 17,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 15,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 8,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 4,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        }
+      ],
+      "O+": [
+        {
+          "days_to_expiry": 21,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 7,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 26,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 15,
+          "count": 1
+        }
+      ],
+      "A-": [
+        {
+          "days_to_expiry": 5,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 22,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 15,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 28,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 26,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 16,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 11,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 21,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 13,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 1
+        }
+      ],
+      "A+": [
+        {
+          "days_to_expiry": 26,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 22,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 25,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        }
+      ],
+      "B-": [
+        {
+          "days_to_expiry": 22,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 8,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 7,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 21,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 16,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 17,
+          "count": 1
+        }
+      ],
+      "B+": [
+        {
+          "days_to_expiry": 4,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 16,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 17,
+          "count": 1
+        }
+      ],
+      "AB-": [
+        {
+          "days_to_expiry": 13,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 4,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 15,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 8,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 7,
+          "count": 1
+        }
+      ],
+      "AB+": [
+        {
+          "days_to_expiry": 10,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 13,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 28,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 1
+        }
+      ]
+    },
+    "pending_requests": [
+      {
+        "request_id": "REQ_1_05b2",
+        "blood_type": "B+",
+        "units_needed": 4,
+        "priority": "urgent",
+        "days_waiting": 0
+      }
+    ],
+    "new_donations": {},
+    "current_day": 2,
+    "total_mismatches_so_far": 0,
+    "total_wasted_units_so_far": 0
+  },
+  "reward": {
+    "value": -0.5,
+    "metrics": {
+      "fulfilled": 0.0
+    }
+  },
+  "done": false,
+  "state": {
+    "task_id": "task_1_easy_basic_fulfillment",
+    "episode_id": "1c6769fe-f93d-479e-a8e7-66d7b7c27b13",
+    "step_count": 1,
+    "is_done": false,
+    "score": 0.0
+  }
+}

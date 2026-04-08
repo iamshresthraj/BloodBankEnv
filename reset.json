@@ -1,0 +1,334 @@
+{
+  "observation": {
+    "inventory": {
+      "O-": [
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 7,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 30,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 22,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 11,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 26,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 12,
+          "count": 1
+        }
+      ],
+      "O+": [
+        {
+          "days_to_expiry": 12,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 22,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        }
+      ],
+      "A-": [
+        {
+          "days_to_expiry": 17,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 28,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 25,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 7,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 30,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 11,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 10,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 8,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        }
+      ],
+      "A+": [
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 8,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 10,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 16,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 20,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 17,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 21,
+          "count": 1
+        }
+      ],
+      "B-": [
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 13,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 6,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 1
+        }
+      ],
+      "B+": [
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 14,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 5,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 30,
+          "count": 1
+        }
+      ],
+      "AB-": [
+        {
+          "days_to_expiry": 23,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 26,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 24,
+          "count": 3
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 16,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 19,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 17,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 21,
+          "count": 2
+        }
+      ],
+      "AB+": [
+        {
+          "days_to_expiry": 23,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 30,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 18,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 25,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 9,
+          "count": 2
+        },
+        {
+          "days_to_expiry": 29,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 11,
+          "count": 1
+        },
+        {
+          "days_to_expiry": 27,
+          "count": 1
+        }
+      ]
+    },
+    "pending_requests": [],
+    "new_donations": {},
+    "current_day": 1,
+    "total_mismatches_so_far": 0,
+    "total_wasted_units_so_far": 0
+  },
+  "state": {
+    "task_id": "task_1_easy_basic_fulfillment",
+    "episode_id": "a90094af-3945-4174-afc0-e49dc43efa6a",
+    "step_count": 0,
+    "is_done": false,
+    "score": 0.0
+  }
+}

@@ -1,9 +1,14 @@
 import uuid
 import random
-from typing import Tuple, Dict, Any, List
+from typing import Tuple, Dict, Any, List, Optional
 from .models import Action, Observation, State, Reward, Request, BloodType, Priority
+from .data_fetcher import fetch_live_inventory, compute_live_distribution
 
 class BloodBankEnv:
+    # Data source attribution
+    DATA_SOURCE = "eRakt Kosh, Ministry of Health & Family Welfare, Govt. of India"
+    DATA_SOURCE_URL = "https://eraktkosh.mohfw.gov.in"
+
     def __init__(self, task_id: str = "task_1_easy_basic_fulfillment"):
         self.task_id = task_id
         self.episode_id = str(uuid.uuid4())
@@ -12,7 +17,8 @@ class BloodBankEnv:
         self.max_steps = 33
         self.is_done = False
         
-        # Indian Subcontinent Blood Type Probabilities
+        # Default: Indian Subcontinent Blood Type Probabilities
+        # Overridden with live data from eRakt Kosh on reset()
         self.type_dist = {
             BloodType.O_POS: 0.37, BloodType.B_POS: 0.32, 
             BloodType.A_POS: 0.22, BloodType.AB_POS: 0.08,
@@ -23,6 +29,11 @@ class BloodBankEnv:
         # State tracking
         self.inventory: Dict[BloodType, List[int]] = {bt: [] for bt in BloodType}
         self.requests: List[Request] = []
+        
+        # Live data source metadata (set during reset)
+        self.data_source_state: Optional[str] = None
+        self.data_source_banks: List[str] = []
+        self.is_live_data: bool = False
         
         # Metrics for graders
         self.total_requests = 0
@@ -43,14 +54,57 @@ class BloodBankEnv:
             if r <= cumulative:
                 return bt
         return BloodType.O_POS
-        
-    def reset(self) -> Observation:
-        self.__init__(self.task_id)
-        # Seed initial inventory
+
+    def _seed_from_live_data(self) -> bool:
+        """
+        Fetch real-time blood stock from eRakt Kosh and seed inventory.
+        Returns True if live data was used, False otherwise.
+        """
+        try:
+            live_stock, state_name, bank_names = fetch_live_inventory()
+            
+            # Update blood type distribution from real data
+            self.type_dist = compute_live_distribution(live_stock)
+            self.data_source_state = state_name
+            self.data_source_banks = bank_names
+            self.is_live_data = True
+            
+            # Seed inventory from real stock counts
+            # Each unit gets a random expiry between 3-35 days
+            for bt, count in live_stock.items():
+                for _ in range(count):
+                    self.inventory[bt].append(random.randint(3, 35))
+                    self.total_donated_units += 1
+            
+            print(
+                f"[ENV] 🩸 Live data loaded from eRakt Kosh | "
+                f"State: {state_name} | "
+                f"Blood Banks: {len(bank_names)} | "
+                f"Total Units: {sum(live_stock.values())}",
+                flush=True
+            )
+            return True
+            
+        except Exception as e:
+            print(f"[ENV] ⚠ eRakt Kosh unavailable ({e}), using synthetic data", flush=True)
+            return False
+
+    def _seed_synthetic_data(self):
+        """Fallback: seed inventory with random synthetic data."""
+        self.is_live_data = False
+        self.data_source_state = None
+        self.data_source_banks = []
         for bt in BloodType:
             for _ in range(random.randint(5, 20)):
                 self.inventory[bt].append(random.randint(5, 30))
                 self.total_donated_units += 1
+
+    def reset(self) -> Observation:
+        self.__init__(self.task_id)
+        
+        # Try live data first, fall back to synthetic
+        if not self._seed_from_live_data():
+            self._seed_synthetic_data()
                 
         return self._get_observation()
 
@@ -62,21 +116,35 @@ class BloodBankEnv:
                 counts[e] = counts.get(e, 0) + 1
             inv_summary[bt.value] = [{"days_to_expiry": d, "count": c} for d, c in counts.items()]
             
+        # Build data source label
+        ds_label = None
+        if self.is_live_data and self.data_source_state:
+            ds_label = f"eRakt Kosh - {self.data_source_state} ({len(self.data_source_banks)} blood banks)"
+
         return Observation(
             inventory=inv_summary,
             pending_requests=self.requests,
             new_donations=donations or {},
             current_day=self.current_day,
             total_mismatches_so_far=self.mismatches,
-            total_wasted_units_so_far=self.wasted_units
+            total_wasted_units_so_far=self.wasted_units,
+            data_source=ds_label,
+            is_live_data=self.is_live_data
         )
 
     def is_compatible(self, requested: BloodType, allocated: BloodType) -> bool:
-        # Simplified Universal Donor Rules for code brevity
-        if allocated == BloodType.O_NEG: return True
-        if requested == BloodType.AB_POS: return True
-        # Exact match (strict hospital policy for standard cases)
-        return requested == allocated
+        # Full Transfusion Matrix
+        compatibility = {
+            BloodType.O_NEG: [BloodType.O_NEG],
+            BloodType.O_POS: [BloodType.O_NEG, BloodType.O_POS],
+            BloodType.A_NEG: [BloodType.O_NEG, BloodType.A_NEG],
+            BloodType.A_POS: [BloodType.O_NEG, BloodType.O_POS, BloodType.A_NEG, BloodType.A_POS],
+            BloodType.B_NEG: [BloodType.O_NEG, BloodType.B_NEG],
+            BloodType.B_POS: [BloodType.O_NEG, BloodType.O_POS, BloodType.B_NEG, BloodType.B_POS],
+            BloodType.AB_NEG: [BloodType.O_NEG, BloodType.A_NEG, BloodType.B_NEG, BloodType.AB_NEG],
+            BloodType.AB_POS: list(BloodType)
+        }
+        return allocated in compatibility.get(requested, [])
 
     # Maximum total reward across the entire episode
     MAX_TOTAL_REWARD = 100.0
@@ -101,24 +169,28 @@ class BloodBankEnv:
             if not req:
                 continue
                 
-            available = len(self.inventory[req.blood_type])
+            # If agent didn't specify alternate type, assume they meant exact match
+            alloc_type = alloc.allocated_blood_type if alloc.allocated_blood_type else req.blood_type
+            
+            available = len(self.inventory[alloc_type])
             units_to_take = min(alloc.allocated_units, available)
             
             if units_to_take > 0:
                 # Sort inventory by expiry to prioritize older units
-                self.inventory[req.blood_type].sort()
+                self.inventory[alloc_type].sort()
                 
                 # Expiry Rotator Tracker
-                if self.inventory[req.blood_type][0] <= 5: 
+                if self.inventory[alloc_type][0] <= 5: 
                     self.near_expiry_used += units_to_take
                 self.total_used += units_to_take
 
                 # Match logic - penalize if agent forces wrong types
-                if not self.is_compatible(req.blood_type, req.blood_type):
+                if not self.is_compatible(req.blood_type, alloc_type):
                     self.mismatches += units_to_take
                     deductions += 2.0  # Heavy deduction for mismatch
+                    # Do not dispense lethal mismatch to patient; leaves inventory intact but penalizes.
                 else:
-                    self.inventory[req.blood_type] = self.inventory[req.blood_type][units_to_take:]
+                    self.inventory[alloc_type] = self.inventory[alloc_type][units_to_take:]
                     req.units_needed -= units_to_take
                     allocations_made += units_to_take
 
@@ -127,7 +199,8 @@ class BloodBankEnv:
                 
                 if req.units_needed <= 0:
                     self.fulfilled_requests += 1
-                    self.requests.remove(req)
+                    if req in self.requests:
+                        self.requests.remove(req)
 
         # Deduct if no allocations were made at all (idle penalty)
         if allocations_made == 0 and len(self.requests) > 0:
@@ -222,10 +295,14 @@ class BloodBankEnv:
         return max(0.0, min(1.0, score)) # Normalize [0.0, 1.0]
 
     def state(self) -> State:
+        ds_label = None
+        if self.is_live_data and self.data_source_state:
+            ds_label = f"eRakt Kosh - {self.data_source_state} ({len(self.data_source_banks)} blood banks)"
         return State(
             task_id=self.task_id,
             episode_id=self.episode_id,
             step_count=self.step_count,
             is_done=self.is_done,
-            score=self.get_grader_score()
+            score=self.get_grader_score(),
+            data_source=ds_label
         )

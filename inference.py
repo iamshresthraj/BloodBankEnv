@@ -38,9 +38,15 @@ SYSTEM_PROMPT = textwrap.dedent(
     Format example:
     {
        "allocations": [
-          {"request_id": "REQ_1_abcd", "allocated_units": 2, "prioritize_near_expiry": true}
+          {
+             "request_id": "REQ_1_abcd", 
+             "allocated_units": 2, 
+             "prioritize_near_expiry": true,
+             "allocated_blood_type": "O-" 
+          }
        ]
     }
+    Note: 'allocated_blood_type' is optional, but you can set it if you want to explicitly dispense a compatible universal donor type instead of an exact match.
     """
 ).strip()
 
@@ -61,10 +67,21 @@ def log_step(step: int, action_obj: Action, obs_dict: dict, reward: float, total
     allocs = []
     if action_obj and hasattr(action_obj, "allocations"):
         for a in action_obj.allocations:
-            btype = req_map.get(a.request_id, "Unknown")
-            allocs.append(f"[Req ID: {a.request_id}, Blood Type: {btype}, Units: {a.allocated_units}, Prioritize near expiry: {a.prioritize_near_expiry}]")
+            req_btype = req_map.get(a.request_id, "Unknown")
+            alloc_btype = getattr(a, "allocated_blood_type", None) or req_btype
+            allocs.append(f"[Req: {a.request_id}, Needs: {req_btype}, Got: {alloc_btype}, Units: {a.allocated_units}]")
     
     action_str = " | ".join(allocs) if allocs else "No Allocations"
+    
+    print(f"\n========== STEP {step} FULL DATA ==========", flush=True)
+    print(f"Observation: {json.dumps(obs_dict, indent=2)}", flush=True)
+    if action_obj and hasattr(action_obj, "allocations"):
+        print("Action allocations: ", end="", flush=True)
+        try:
+            print(json.dumps([a.model_dump() if hasattr(a, "model_dump") else a.dict() for a in action_obj.allocations], indent=2), flush=True)
+        except Exception:
+            print(str(action_obj.allocations), flush=True)
+    print("===========================================", flush=True)
     
     print(
         f"[STEP {step}] Step Reward: {reward:.2f} / {MAX_STEP_REWARD:.2f} | Cumulative: {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f} | Done: {done} | Allocations: {action_str} | Error: {error_val}",
@@ -160,9 +177,15 @@ async def main() -> None:
 
     try:
         result = await env.reset()
-        last_obs = result.observation.dict()
+        obs_obj = result.observation
+        last_obs = obs_obj.dict()
         last_reward = 0.0
         score = result.score
+
+        if obs_obj.is_live_data:
+            print(f"[ENV] 📡 Live Data Source: {obs_obj.data_source}", flush=True)
+        else:
+            print(f"[ENV] 🎲 Data Source: Synthetic Fallback", flush=True)
 
         for step in range(1, MAX_STEPS + 1):
             if result.done:

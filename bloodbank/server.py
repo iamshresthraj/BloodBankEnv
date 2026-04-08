@@ -15,116 +15,149 @@ HTML_CONTENT = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BloodBankEnv | OpenEnv Hackathon</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --bg-color: #0d0f12;
-            --accent-glow: rgba(220, 20, 60, 0.6);
+            --bg-color: #05070a;
+            --accent-red: #ff3344;
+            --accent-red-glow: rgba(255, 51, 68, 0.4);
             --card-bg: rgba(255, 255, 255, 0.03);
-            --text-primary: #f2f2f2;
-            --text-secondary: #a0aab2;
-            --blood-red: #e63946;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --success-green: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(220, 20, 60, 0.08), transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(220, 20, 60, 0.05), transparent 25%);
+                radial-gradient(circle at 10% 10%, rgba(255, 51, 68, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(255, 51, 68, 0.03) 0%, transparent 40%);
         }
 
         .container {
-            max-width: 900px;
-            padding: 40px;
-            border-radius: 24px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 60px 40px;
+            border-radius: 32px;
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
-            animation: fadeIn 1s ease-out;
+            position: relative;
+            z-index: 1;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #ff4b4b, #ff9090);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p.subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-weight: 300;
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--border-color), transparent 50%, var(--border-color));
+            border-radius: 34px;
+            z-index: -1;
+            pointer-events: none;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 8px 16px;
-            border-radius: 50px;
-            background: rgba(46, 204, 113, 0.1);
-            color: #2ecc71;
+            padding: 10px 20px;
+            border-radius: 100px;
+            background: rgba(16, 185, 129, 0.08);
+            color: var(--success-green);
             font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 30px;
-            border: 1px solid rgba(46, 204, 113, 0.2);
-            box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+            font-size: 0.85rem;
+            margin-bottom: 40px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
         .status-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #2ecc71;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-green);
             border-radius: 50%;
-            margin-right: 8px;
-            box-shadow: 0 0 8px #2ecc71;
-            animation: pulse 2s infinite ease-in-out;
+            margin-right: 10px;
+            box-shadow: 0 0 12px var(--success-green);
+            animation: pulse-green 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
-            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+        @keyframes pulse-green {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin: 0;
+            background: linear-gradient(to bottom right, #fff 30%, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+
+        p.subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            margin-bottom: 60px;
+            font-weight: 400;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 20px;
         }
 
         .card {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 32px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
             text-align: left;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            border-color: rgba(220, 20, 60, 0.3);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-8px);
+            border-color: rgba(255, 51, 68, 0.3);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-red);
         }
 
         .card h3 {
@@ -132,68 +165,99 @@ HTML_CONTENT = """
             font-size: 1.2rem;
             margin-top: 0;
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-weight: 700;
         }
 
         .card p {
             color: var(--text-secondary);
-            font-size: 0.95rem;
-            line-height: 1.5;
+            font-size: 0.9rem;
+            line-height: 1.6;
             margin: 0;
         }
 
-        .btn-group {
+        .live-source {
             margin-top: 40px;
+            padding: 24px;
+            border-radius: 20px;
+            background: linear-gradient(90deg, rgba(255, 51, 68, 0.05), transparent);
+            border: 1px solid rgba(255, 51, 68, 0.1);
+            text-align: left;
             display: flex;
-            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .live-source-info h4 {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--accent-red);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .live-source-info p {
+            margin: 4px 0 0 0;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .btn-group {
+            margin-top: 60px;
+            display: flex;
+            gap: 20px;
             justify-content: center;
         }
 
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 16px 32px;
+            border-radius: 100px;
+            font-weight: 700;
             text-decoration: none;
-            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .btn-primary {
-            background: var(--blood-red);
+            background: var(--accent-red);
             color: white;
-            box-shadow: 0 4px 15px rgba(230, 57, 70, 0.3);
+            box-shadow: 0 10px 25px -5px var(--accent-red-glow);
         }
 
         .btn-primary:hover {
-            background: #ff4b4b;
-            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.4);
-            transform: scale(1.02);
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px -5px var(--accent-red-glow);
+            filter: brightness(1.1);
         }
 
         .btn-secondary {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.1);
-            transform: scale(1.02);
+            transform: scale(1.05);
         }
-        
-        .code-block {
-            background: #1a1c21;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            color: #61dafb;
-            margin-top: 15px;
-            font-size: 0.85rem;
+
+        .api-badge {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 0.75rem;
+            color: #60a5fa;
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            h1 { font-size: 2.5rem; }
+            .container { padding: 40px 20px; }
         }
     </style>
 </head>
@@ -201,48 +265,51 @@ HTML_CONTENT = """
     <div class="container">
         <div class="status-badge">
             <div class="status-dot"></div>
-            Environment API Online
+            Environment API Online • Real-time
         </div>
         
-        <h1>🩸 BloodBankEnv</h1>
-        <p class="subtitle">An OpenEnv RL Simulation for Emergency Blood Bank Logistics</p>
+        <h1>BloodBankEnv</h1>
+        <p class="subtitle">An advanced RL simulation for strategic hospital blood bank management, integrated with real-time Indian blood stock data.</p>
 
         <div class="grid">
             <div class="card">
-                <h3>🏥 Environment State</h3>
-                <p>Monitors blood type inventory, expiry rotations, patient requests (Routine to Emergency), and stochastic donation inflows.</p>
+                <div class="card-icon">🏥</div>
+                <h3>Dynamic State</h3>
+                <p>Live inventory from 2000+ Indian blood banks via eRakt Kosh API integration.</p>
             </div>
             <div class="card">
-                <h3>⚖️ Auto Allocations</h3>
-                <p>LLM Agents allocate blood to patients while maintaining strict compatibility and preventing life-threatening mismatches.</p>
+                <div class="card-icon">⚖️</div>
+                <h3>Intelligent Dispatch</h3>
+                <p>Optimized allocation algorithms for life-critical priority matching and expiration control.</p>
             </div>
             <div class="card">
-                <h3>🏆 Action Rewards</h3>
-                <p>Agents are graded on fulfillment rate, minimal blood expiration (wastage), and prioritized emergency response times.</p>
+                <div class="card-icon">🏆</div>
+                <h3>Grader Score</h3>
+                <p>Performance based on fulfillment rate, minimal wastage, and emergency response speed.</p>
             </div>
         </div>
 
-        <div style="text-align: left; margin-top: 30px;">
-            <p style="color: var(--text-secondary); margin-bottom: 5px;"><strong>API Endpoints Active:</strong></p>
-            <div class="code-block">
-                POST /reset - Initialize episode state<br>
-                POST /step - Submit agent observation actions<br>
-                GET /state/{id} - Retrieve episodic grading state
+        <div class="live-source">
+            <div class="live-source-info">
+                <h4>Primary Data Integrity</h4>
+                <p>eRakt Kosh (MoHFW, Govt. of India)</p>
             </div>
+            <div class="api-badge">HTTPS / JSON / REAL-TIME</div>
         </div>
 
         <div class="btn-group">
             <a href="https://github.com/iamshresthraj/BloodBankEnv" target="_blank" class="btn btn-primary">
-                View Source
+                View Repository
             </a>
             <a href="/docs" target="_blank" class="btn btn-secondary">
-                View API Docs
+                API Specification
             </a>
         </div>
     </div>
 </body>
 </html>
 """
+
 
 class ResetRequest(BaseModel):
     task_id: str

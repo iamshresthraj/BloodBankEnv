@@ -9,7 +9,7 @@ app_port: 8000
 
 <div align="center">
   
-  # 🩸 BloodBankEnv
+  # BloodBankEnv
   **An OpenEnv RL Scenario for Healthcare Logistics Optimization**
   
   [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org/downloads/)
@@ -23,7 +23,7 @@ app_port: 8000
 
 ---
 
-## 🌟 Overview & Motivation
+## Overview & Motivation
 
 In many parts of the world, specifically in the Indian Subcontinent, blood shortages and mismatched transfusions cause significant loss of life. Concurrently, highly perishable blood stocks frequently expire in storage due to poor logistics and lack of rotation.
 
@@ -37,27 +37,29 @@ Agents operating in this environment must naturally balance competing priorities
 
 ---
 
-## 🏗️ Architecture Flow
+## Architecture Flow
 
 The environment models a realistic interaction between an AI decision-maker and a centralized blood bank manager.
 
 ```mermaid
 graph TD
-    classDef agent fill:#2b2d42,stroke:#edf2f4,stroke-width:2px,color:#edf2f4
-    classDef sys fill:#d90429,stroke:#ef233c,stroke-width:2px,color:#fff
-    classDef external fill:#8d99ae,stroke:#2b2d42,stroke-width:2px,color:#fff
+    classDef agent fill:#0a9396,stroke:#005f73,stroke-width:2px,color:#fff
+    classDef sys fill:#ae2012,stroke:#9b2226,stroke-width:2px,color:#fff
+    classDef router fill:#e9d8a6,stroke:#ca6702,stroke-width:2px,color:#000
+    classDef external fill:#005f73,stroke:#0a9396,stroke-width:2px,color:#fff
+    classDef grader fill:#94d2bd,stroke:#0a9396,stroke-width:2px,color:#000
 
-    A[AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::sys
+    A[AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::router
     B -->|Provides JSON Action| C{BloodBankEnv Engine}:::sys
     C -->|Validates Allocations| D[Inventory Manager]:::sys
     D -->|Executes Dispatch| E(Hospital Requesters):::external
-    C -->|Tracks Performance Metrics| F[Grader System]:::sys
+    C -->|Tracks Performance Metrics| F[Grader System]:::grader
     F -->|Calculates Step Reward| B
 ```
 
 ---
 
-## 🩸 Blood Type Compatibility Matrix
+## Blood Type Compatibility Matrix
 
 To successfully allocate resources without triggering severe penalties, agents must adhere strictly to these fundamental transfusion rules. **There are no exceptions.**
 
@@ -77,7 +79,7 @@ To successfully allocate resources without triggering severe penalties, agents m
 
 ---
 
-## 🧠 Environment Mechanics
+## Environment Mechanics
 
 ### State (Observation Space)
 At each step (representing a single day), the agent observes the current state of the system modeled as a standard JSON dictionary.
@@ -138,10 +140,10 @@ The AI agent must process the observation and return a **strict JSON** represent
 
 ---
 
-## ⚖️ Grader & Reward System
+## Grader & Reward System
 
 ### The 100-Point Budget
-The environment uses a **100-point budget** distributed equally across 30 conceptual steps (approx. **3.33 pts/step**). 
+The environment uses a **100-point budget** distributed equally across 33 conceptual steps (approx. **3.03 pts/step**). 
 Each step, the agent starts with the full step budget. Penalties are deducted based on suboptimal decisions made during that turn. Rewards are bounded; the minimum reward per step is `0.00`.
 
 ### Penalty Table
@@ -160,7 +162,7 @@ Each step, the agent starts with the full step budget. Penalties are deducted ba
 
 ---
 
-## 🏆 Evaluation Tracks
+## Evaluation Tracks
 
 BloodBankEnv supports multiple difficulties, each modifying how the Grader weighs performance and the intensity of the stochastic data generated.
 
@@ -172,7 +174,7 @@ BloodBankEnv supports multiple difficulties, each modifying how the Grader weigh
 
 ---
 
-## 🚀 Setup & Installation
+## Setup & Installation
 
 ### Local Development 
 
@@ -196,7 +198,7 @@ BloodBankEnv supports multiple difficulties, each modifying how the Grader weigh
 
 ---
 
-## 🧪 Running Agent Evaluations
+## Running Agent Evaluations
 
 Run the pre-validation inference script locally using the default bounds or target HF Router parameters. Ensure the FastAPI server is running first.
 
@@ -225,16 +227,16 @@ Output strictly follows OpenEnv standard telemetry conventions:
 ======================================================================
   Grader Score : 0.850 / 1.000
   Total Reward : 85.20 / 100
-  Steps Played : 30 / 30
+  Steps Played : 33 / 33
   Result       : PASS ✅
 ======================================================================
 
-[END] success=true steps=30 score=0.850 total_reward=85.20
+[END] success=true steps=33 score=0.850 total_reward=85.20
 ```
 
 ---
 
-## 🐳 Docker & Hugging Face Deployment
+## Docker & Hugging Face Deployment
 
 This project natively supports the `/reset` and `/step` OpenEnv webhook structures and is ready for containerized deployment, particularly for **Hugging Face Spaces**.
 
