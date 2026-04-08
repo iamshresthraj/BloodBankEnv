@@ -41,21 +41,13 @@ Agents operating in this environment must naturally balance competing priorities
 
 The environment models a realistic interaction between an AI decision-maker and a centralized blood bank manager.
 
-```mermaid
-graph TD
-    classDef agent fill:#0a9396,stroke:#005f73,stroke-width:2px,color:#fff
-    classDef sys fill:#ae2012,stroke:#9b2226,stroke-width:2px,color:#fff
-    classDef router fill:#e9d8a6,stroke:#ca6702,stroke-width:2px,color:#000
-    classDef external fill:#005f73,stroke:#0a9396,stroke-width:2px,color:#fff
-    classDef grader fill:#94d2bd,stroke:#0a9396,stroke-width:2px,color:#000
-
-    A[AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::router
-    B -->|Provides JSON Action| C{BloodBankEnv Engine}:::sys
-    C -->|Validates Allocations| D[Inventory Manager]:::sys
-    D -->|Executes Dispatch| E(Hospital Requesters):::external
-    C -->|Tracks Performance Metrics| F[Grader System]:::grader
-    F -->|Calculates Step Reward| B
-```
+| Step | Component | Action |
+|:---:|:---|:---|
+| **1** | **AI Agent** | Reads the daily observation (inventory, requests, donations) |
+| **2** | **OpenEnv Client / HF Router** | Forwards the agent's JSON action to the engine |
+| **3** | **BloodBankEnv Engine** | Validates allocations against compatibility rules |
+| **4a** | **Inventory Manager** | Executes dispatch to **Hospital Requesters** |
+| **4b** | **Grader System** | Calculates step reward and returns it to the client |
 
 ---
 
