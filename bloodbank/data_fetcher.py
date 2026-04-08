@@ -147,7 +147,7 @@ def fetch_state_stock(state_name: str) -> Tuple[List[Dict], str]:
         "Referer": f"{BASE_URL}/stockAvailability.cnt",
     }
 
-    response = requests.get(STOCK_ENDPOINT, params=query, headers=headers, timeout=5)
+    response = requests.get(STOCK_ENDPOINT, params=query, headers=headers, timeout=3)
     response.raise_for_status()
     data = response.json()
 
@@ -197,7 +197,7 @@ def fetch_live_inventory(
     if preferred_state and preferred_state in STATE_CODES:
         states_to_try = [preferred_state]
     else:
-        states_to_try = random.sample(HIGH_ACTIVITY_STATES, len(HIGH_ACTIVITY_STATES))
+        states_to_try = random.sample(HIGH_ACTIVITY_STATES, min(3, len(HIGH_ACTIVITY_STATES)))
 
     last_error = None
     for state in states_to_try:

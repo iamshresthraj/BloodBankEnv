@@ -325,12 +325,6 @@ class StepRequest(BaseModel):
     episode_id: str
     action: Action
 
-def _do_reset(task_id: str):
-    """Run the blocking reset (including external API calls) in a thread."""
-    env = BloodBankEnv(task_id=task_id)
-    obs = env.reset()
-    return env, obs
-
 @app.post("/reset")
 async def reset(request: Request):
     # Accept empty body, {}, or full JSON body
@@ -343,8 +337,8 @@ async def reset(request: Request):
         pass  # Empty body or invalid JSON is fine
 
     try:
-        loop = asyncio.get_event_loop()
-        env, obs = await loop.run_in_executor(_thread_pool, _do_reset, task_id)
+        env = BloodBankEnv(task_id=task_id)
+        obs = env.reset()
         envs[env.episode_id] = env
         state = env.state()
         return {

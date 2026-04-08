@@ -102,9 +102,32 @@ class BloodBankEnv:
     def reset(self) -> Observation:
         self.__init__(self.task_id)
         
-        # Try live data first, fall back to synthetic
-        if not self._seed_from_live_data():
-            self._seed_synthetic_data()
+        # Always use synthetic data first for instant response
+        # This ensures the /reset endpoint never times out
+        self._seed_synthetic_data()
+        
+        # Then try to upgrade to live data (non-blocking, best-effort)
+        try:
+            import threading
+            def _try_live():
+                try:
+                    live_stock, state_name, bank_names = fetch_live_inventory()
+                    self.type_dist = compute_live_distribution(live_stock)
+                    self.data_source_state = state_name
+                    self.data_source_banks = bank_names
+                    self.is_live_data = True
+                    print(
+                        f"[ENV] Live data loaded in background from eRakt Kosh | "
+                        f"State: {state_name} | "
+                        f"Blood Banks: {len(bank_names)}",
+                        flush=True
+                    )
+                except Exception as e:
+                    print(f"[ENV] Background live data fetch failed: {e}", flush=True)
+            t = threading.Thread(target=_try_live, daemon=True)
+            t.start()
+        except Exception:
+            pass
                 
         return self._get_observation()
 
