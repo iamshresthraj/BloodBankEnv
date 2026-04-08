@@ -83,8 +83,23 @@ def log_step(step: int, action_obj: Action, obs_dict: dict, reward: float, total
             print(str(action_obj.allocations), flush=True)
     print("===========================================", flush=True)
     
+    # Verbose log (extra context for debugging — validators ignore this)
     print(
-        f"[STEP {step}] Step Reward: {reward:.2f} / {MAX_STEP_REWARD:.2f} | Cumulative: {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f} | Done: {done} | Allocations: {action_str} | Error: {error_val}",
+        f"  -> Step Reward: {reward:.2f} / {MAX_STEP_REWARD:.2f} | Cumulative: {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f} | Allocations: {action_str}",
+        flush=True,
+    )
+
+    # === REQUIRED OpenEnv stdout format ===
+    done_str = str(done).lower()
+    error_str = error_val if error_val != "None" else "null"
+    action_json = "{}"
+    if action_obj and hasattr(action_obj, "allocations"):
+        try:
+            action_json = json.dumps(action_obj.model_dump() if hasattr(action_obj, "model_dump") else action_obj.dict())
+        except Exception:
+            action_json = json.dumps({"allocations": []})
+    print(
+        f"[STEP] step={step} action={action_json} reward={reward:.2f} done={done_str} error={error_str}",
         flush=True,
     )
 
@@ -107,7 +122,8 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
     print(f"  Steps Played : {steps} / {MAX_STEPS}", flush=True)
     print(f"  Result       : {'PASS ✅' if success else 'FAIL ❌'}", flush=True)
     print("="*70 + "\n", flush=True)
-    print(f"[END] success={str(success).lower()} steps={steps} score={score:.3f} total_reward={total_reward:.2f}", flush=True)
+    rewards_csv = ",".join(f"{r:.2f}" for r in rewards)
+    print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_csv}", flush=True)
 
 def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
     return textwrap.dedent(
