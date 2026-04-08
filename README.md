@@ -41,37 +41,20 @@ Agents operating in this environment must naturally balance competing priorities
 
 The environment models a realistic interaction between an AI decision-maker and a centralized blood bank manager.
 
-```
-                    ┌──────────────────┐
-                    │     AI Agent     │
-                    └────────┬─────────┘
-                             │  Reads Daily Observation
-                             ▼
-                    ┌──────────────────┐
-                    │  OpenEnv Client  │◄─────────────────────────┐
-                    │   / HF Router    │                          │
-                    └────────┬─────────┘                          │
-                             │  Provides JSON Action              │
-                             ▼                                    │
-                    ┌──────────────────┐                          │
-                    │  BloodBankEnv    │                          │
-                    │     Engine       │                          │
-                    └───┬──────────┬───┘                          │
-                        │          │                              │
-        Validates       │          │  Tracks Performance          │
-        Allocations     │          │  Metrics                     │
-                        ▼          ▼                              │
-              ┌────────────┐  ┌──────────────┐                   │
-              │  Inventory │  │    Grader    │                   │
-              │  Manager   │  │    System    │───────────────────┘
-              └──────┬─────┘  └──────────────┘  Calculates
-                     │                          Step Reward
-                     │  Executes Dispatch
-                     ▼
-              ┌────────────────┐
-              │   Hospital     │
-              │  Requesters    │
-              └────────────────┘
+```mermaid
+graph TD
+    classDef agent fill:#0a9396,stroke:#005f73,stroke-width:2px,color:#fff
+    classDef sys fill:#ae2012,stroke:#9b2226,stroke-width:2px,color:#fff
+    classDef router fill:#e9d8a6,stroke:#ca6702,stroke-width:2px,color:#000
+    classDef external fill:#005f73,stroke:#0a9396,stroke-width:2px,color:#fff
+    classDef grader fill:#94d2bd,stroke:#0a9396,stroke-width:2px,color:#000
+
+    A[AI Agent]:::agent -->|Reads Daily Observation| B(OpenEnv Client / HF Router):::router
+    B -->|Provides JSON Action| C{BloodBankEnv Engine}:::sys
+    C -->|Validates Allocations| D[Inventory Manager]:::sys
+    D -->|Executes Dispatch| E(Hospital Requesters):::external
+    C -->|Tracks Performance Metrics| F[Grader System]:::grader
+    F -->|Calculates Step Reward| B
 ```
 
 ---
