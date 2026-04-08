@@ -1,11 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from .environment import BloodBankEnv
 from .models import Action
+import asyncio
+import concurrent.futures
+import traceback
 
 app = FastAPI(title="BloodBank OpenEnv")
 envs = {}
+_thread_pool = concurrent.futures.ThreadPoolExecutor(max_workers=2)
 
 HTML_CONTENT = """
 <!DOCTYPE html>
@@ -321,15 +325,39 @@ class StepRequest(BaseModel):
     episode_id: str
     action: Action
 
-@app.post("/reset")
-def reset(req: ResetRequest = None):
-    if req is None:
-        req = ResetRequest()
-    env = BloodBankEnv(task_id=req.task_id)
+def _do_reset(task_id: str):
+    """Run the blocking reset (including external API calls) in a thread."""
+    env = BloodBankEnv(task_id=task_id)
     obs = env.reset()
-    envs[env.episode_id] = env
-    state = env.state()
-    return {"observation": obs.dict(), "state": state.dict()}
+    return env, obs
+
+@app.post("/reset")
+async def reset(request: Request):
+    # Accept empty body, {}, or full JSON body
+    task_id = "task_1_easy_basic_fulfillment"
+    try:
+        body = await request.json()
+        if isinstance(body, dict) and body.get("task_id"):
+            task_id = body["task_id"]
+    except Exception:
+        pass  # Empty body or invalid JSON is fine
+
+    try:
+        loop = asyncio.get_event_loop()
+        env, obs = await loop.run_in_executor(_thread_pool, _do_reset, task_id)
+        envs[env.episode_id] = env
+        state = env.state()
+        return {
+            "episode_id": env.episode_id,
+            "observation": obs.dict(),
+            "reward": 0.0,
+            "done": False,
+            "info": {},
+            "state": state.dict()
+        }
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/step")
 def step(req: StepRequest):
@@ -340,9 +368,11 @@ def step(req: StepRequest):
     obs, reward, done, info = env.step(req.action)
     state = env.state()
     return {
+        "episode_id": req.episode_id,
         "observation": obs.dict(),
         "reward": reward.dict(),
         "done": done,
+        "info": info,
         "state": state.dict()
     }
 

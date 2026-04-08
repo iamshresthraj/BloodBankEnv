@@ -147,7 +147,7 @@ def fetch_state_stock(state_name: str) -> Tuple[List[Dict], str]:
         "Referer": f"{BASE_URL}/stockAvailability.cnt",
     }
 
-    response = requests.get(STOCK_ENDPOINT, params=query, headers=headers, timeout=15)
+    response = requests.get(STOCK_ENDPOINT, params=query, headers=headers, timeout=5)
     response.raise_for_status()
     data = response.json()
 
