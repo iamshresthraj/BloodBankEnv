@@ -77,7 +77,7 @@ class BloodBankEnv:
                     self.total_donated_units += 1
             
             print(
-                f"[ENV] 🩸 Live data loaded from eRakt Kosh | "
+                f"[ENV] Live data loaded from eRakt Kosh | "
                 f"State: {state_name} | "
                 f"Blood Banks: {len(bank_names)} | "
                 f"Total Units: {sum(live_stock.values())}",
@@ -86,7 +86,7 @@ class BloodBankEnv:
             return True
             
         except Exception as e:
-            print(f"[ENV] ⚠ eRakt Kosh unavailable ({e}), using synthetic data", flush=True)
+            print(f"[ENV] eRakt Kosh unavailable ({e}), using synthetic data", flush=True)
             return False
 
     def _seed_synthetic_data(self):

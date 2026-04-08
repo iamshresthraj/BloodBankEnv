@@ -49,7 +49,7 @@ def check_16_points():
 
     print("\nSummary of Checks:")
     for point, status in results.items():
-        icon = "✅" if status else "❌"
+        icon = "[PASS]" if status else "[FAIL]"
         print(f"{icon} {point}")
     
     overall = all(results.values())

@@ -120,7 +120,7 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
     print(f"  Grader Score : {score:.3f} / 1.000", flush=True)
     print(f"  Total Reward : {total_reward:.2f} / {MAX_TOTAL_REWARD:.0f}", flush=True)
     print(f"  Steps Played : {steps} / {MAX_STEPS}", flush=True)
-    print(f"  Result       : {'PASS ✅' if success else 'FAIL ❌'}", flush=True)
+    print(f"  Result       : {'PASS' if success else 'FAIL'}", flush=True)
     print("="*70 + "\n", flush=True)
     rewards_csv = ",".join(f"{r:.2f}" for r in rewards)
     print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_csv}", flush=True)
@@ -199,9 +199,9 @@ async def main() -> None:
         score = result.score
 
         if obs_obj.is_live_data:
-            print(f"[ENV] 📡 Live Data Source: {obs_obj.data_source}", flush=True)
+            print(f"[ENV] Live Data Source: {obs_obj.data_source}", flush=True)
         else:
-            print(f"[ENV] 🎲 Data Source: Synthetic Fallback", flush=True)
+            print(f"[ENV] Data Source: Synthetic Fallback", flush=True)
 
         for step in range(1, MAX_STEPS + 1):
             if result.done:

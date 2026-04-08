@@ -311,15 +311,20 @@ HTML_CONTENT = """
 """
 
 
+from typing import Optional
+
 class ResetRequest(BaseModel):
-    task_id: str
+    task_id: Optional[str] = "task_1_easy_basic_fulfillment"
+    episode_id: Optional[str] = None
 
 class StepRequest(BaseModel):
     episode_id: str
     action: Action
 
 @app.post("/reset")
-def reset(req: ResetRequest):
+def reset(req: ResetRequest = None):
+    if req is None:
+        req = ResetRequest()
     env = BloodBankEnv(task_id=req.task_id)
     obs = env.reset()
     envs[env.episode_id] = env
