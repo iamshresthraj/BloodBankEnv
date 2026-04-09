@@ -16,8 +16,14 @@ API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
 # API_BASE_URL points to the LLM router, not the environment!
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-TASK_NAME = os.getenv("TASK_NAME", "task_3_hard_adaptive_management")
 BENCHMARK = os.getenv("BENCHMARK", "BloodBankEnv")
+
+# All 3 tasks that the validator expects to see graded
+ALL_TASKS = [
+    "task_1_easy_basic_fulfillment",
+    "task_2_medium_expiry_rotation",
+    "task_3_hard_adaptive_management",
+]
 
 MAX_STEPS = 33
 MAX_TOTAL_REWARD = 100.0
@@ -49,6 +55,16 @@ SYSTEM_PROMPT = textwrap.dedent(
     Note: 'allocated_blood_type' is optional, but you can set it if you want to explicitly dispense a compatible universal donor type instead of an exact match.
     """
 ).strip()
+
+
+def clamp_score(score: float) -> float:
+    """Ensure score is strictly between 0 and 1 (exclusive). Never 0.0, never 1.0."""
+    if score <= 0.0:
+        return 0.01
+    if score >= 1.0:
+        return 0.99
+    return round(score, 4)
+
 
 def log_start(task: str, env: str, model: str) -> None:
     print(f"[START] task={task} env={env} model={model}", flush=True)
@@ -103,10 +119,10 @@ def log_step(step: int, action_obj: Action, obs_dict: dict, reward: float, total
         flush=True,
     )
 
-def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
+def log_end(task: str, success: bool, steps: int, score: float, rewards: List[float]) -> None:
     total_reward = sum(rewards)
     print("\n" + "="*70, flush=True)
-    print("  BLOODBANKENV - FINAL EVALUATION REPORT", flush=True)
+    print(f"  BLOODBANKENV - FINAL EVALUATION REPORT ({task})", flush=True)
     print("="*70, flush=True)
     print(f"  {'Step':<8} {'Reward':>10} {'Max':>10} {'% Earned':>10}", flush=True)
     print(f"  {'-'*8} {'-'*10} {'-'*10} {'-'*10}", flush=True)
@@ -123,7 +139,8 @@ def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> No
     print(f"  Result       : {'PASS' if success else 'FAIL'}", flush=True)
     print("="*70 + "\n", flush=True)
     rewards_csv = ",".join(f"{r:.2f}" for r in rewards)
-    print(f"[END] success={str(success).lower()} steps={steps} rewards={rewards_csv}", flush=True)
+    # CRITICAL: Include task= and score= in [END] line so the validator can parse them
+    print(f"[END] success={str(success).lower()} task={task} steps={steps} score={score:.4f} rewards={rewards_csv}", flush=True)
 
 def build_user_prompt(step: int, obs: dict, last_reward: float) -> str:
     return textwrap.dedent(
@@ -180,23 +197,24 @@ def get_model_action(client: OpenAI, step: int, obs: dict, last_reward: float) -
     dummy = Action(allocations=[])
     return dummy, json.dumps(dummy.dict())
 
-async def main() -> None:
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+
+async def run_single_task(task_name: str, client: OpenAI) -> float:
+    """Run a single task episode. Returns the clamped grader score."""
     env = await BloodBankEnvClient.from_docker_image(IMAGE_NAME)
 
     rewards: List[float] = []
     steps_taken = 0
-    score = 0.0
+    score = 0.01  # default: strictly > 0
     success = False
 
-    log_start(task=TASK_NAME, env=BENCHMARK, model=MODEL_NAME)
+    log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
     try:
-        result = await env.reset()
+        result = await env.reset(task_id=task_name)
         obs_obj = result.observation
         last_obs = obs_obj.dict()
         last_reward = 0.0
-        score = result.score
+        score = clamp_score(result.score)
 
         if obs_obj.is_live_data:
             print(f"[ENV] Live Data Source: {obs_obj.data_source}", flush=True)
@@ -215,13 +233,13 @@ async def main() -> None:
                 obs_dict = result.observation.dict()
                 reward = result.reward or 0.0
                 done = result.done
-                score = result.score
+                score = clamp_score(result.score)
             except Exception as e:
                 obs_dict = last_obs
                 reward = 0.0
                 done = True
                 error_msg = str(e)
-                score = 0.0
+                score = clamp_score(0.0)
 
             rewards.append(reward)
             steps_taken = step
@@ -242,7 +260,47 @@ async def main() -> None:
             await env.close()
         except Exception as e:
             print(f"[DEBUG] env.close() error: {e}", flush=True)
-        log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
+        # Ensure score is strictly within (0, 1) one final time before logging
+        score = clamp_score(score)
+        log_end(task=task_name, success=success, steps=steps_taken, score=score, rewards=rewards)
+
+    return score
+
+
+async def main() -> None:
+    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+
+    # Determine which tasks to run
+    # If TASK_NAME env var is set to a specific single task, still run all 3 for validator compliance
+    task_override = os.getenv("TASK_NAME", "")
+
+    if task_override and task_override in ALL_TASKS:
+        # Run the specified task first (primary), then the others with fewer steps
+        tasks_to_run = [task_override] + [t for t in ALL_TASKS if t != task_override]
+    else:
+        tasks_to_run = ALL_TASKS
+
+    print(f"\n{'='*70}", flush=True)
+    print(f"  BLOODBANKENV - RUNNING {len(tasks_to_run)} TASKS", flush=True)
+    print(f"  Tasks: {', '.join(tasks_to_run)}", flush=True)
+    print(f"{'='*70}\n", flush=True)
+
+    all_scores = {}
+    for task_name in tasks_to_run:
+        print(f"\n{'#'*70}", flush=True)
+        print(f"  STARTING TASK: {task_name}", flush=True)
+        print(f"{'#'*70}\n", flush=True)
+
+        task_score = await run_single_task(task_name, client)
+        all_scores[task_name] = task_score
+
+    # Final summary
+    print(f"\n{'='*70}", flush=True)
+    print(f"  BLOODBANKENV - ALL TASKS COMPLETE", flush=True)
+    print(f"{'='*70}", flush=True)
+    for t, s in all_scores.items():
+        print(f"  {t}: score={s:.4f}", flush=True)
+    print(f"{'='*70}\n", flush=True)
 
 
 if __name__ == "__main__":

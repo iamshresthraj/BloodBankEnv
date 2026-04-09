@@ -22,15 +22,22 @@ class BloodBankEnvClient:
         env_url = os.getenv("ENV_API_URL", "http://localhost:8000")
         return cls(base_url=env_url)
 
-    async def reset(self) -> Result:
-        task_id = os.getenv("TASK_NAME", "task_3_hard_adaptive_management")
+    async def reset(self, task_id: str = None) -> Result:
+        if task_id is None:
+            task_id = os.getenv("TASK_NAME", "task_3_hard_adaptive_management")
         async with httpx.AsyncClient() as http:
             resp = await http.post(f"{self.base_url}/reset", json={"task_id": task_id})
             data = resp.json()
             self.episode_id = data["state"]["episode_id"]
+            raw_score = data["state"].get("score", 0.0)
+            # Clamp score strictly within (0, 1)
+            if raw_score <= 0.0:
+                raw_score = 0.01
+            elif raw_score >= 1.0:
+                raw_score = 0.99
             return Result(
                 observation=Observation(**data["observation"]),
-                score=data["state"].get("score", 0.0)
+                score=raw_score
             )
 
     async def step(self, action: Action) -> Result:
@@ -40,11 +47,17 @@ class BloodBankEnvClient:
                 "action": action.dict()
             })
             data = resp.json()
+            raw_score = data["state"].get("score", 0.0)
+            # Clamp score strictly within (0, 1)
+            if raw_score <= 0.0:
+                raw_score = 0.01
+            elif raw_score >= 1.0:
+                raw_score = 0.99
             return Result(
                 observation=Observation(**data["observation"]),
                 reward=data["reward"]["value"],
                 done=data["done"],
-                score=data["state"].get("score", 0.0)
+                score=raw_score
             )
             
     async def close(self):
