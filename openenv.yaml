@@ -12,11 +12,26 @@ tasks:
     name: "Basic Compatibility & Fulfillment"
     description: "Match blood types correctly and fulfill basic requests."
     difficulty: "easy"
+    grader_enabled: true
+    grader:
+      type: "llm_based"
+      system_prompt: "You are an expert nuanced evaluator. Score the completion on a scale from 0 to 1.\nCRITICAL: Output a float STRICTLY greater than 0 and STRICTLY less than 1 (example: 0.234). Never use 0.0 or 1.0.\nFirst give 1-sentence reasoning, then output ONLY: {\"score\": 0.XXX}"
+      user_prompt_template: "Task: {task_description}\n\nSubmission to score: {submission_output}"
   - id: "task_2_medium_expiry_rotation"
     name: "Expiry-Aware Stock Rotation"
     description: "Minimize wastage by prioritizing blood units nearing expiry."
     difficulty: "medium"
+    grader_enabled: true
+    grader:
+      type: "llm_based"
+      system_prompt: "You are an expert nuanced evaluator. Score the completion on a scale from 0 to 1.\nCRITICAL: Output a float STRICTLY greater than 0 and STRICTLY less than 1 (example: 0.234). Never use 0.0 or 1.0.\nFirst give 1-sentence reasoning, then output ONLY: {\"score\": 0.XXX}"
+      user_prompt_template: "Task: {task_description}\n\nSubmission to score: {submission_output}"
   - id: "task_3_hard_adaptive_management"
     name: "Adaptive Management Under Uncertainty"
     description: "Balance stock across all 8 blood types while handling random donation inflows and prioritizing critical emergencies."
     difficulty: "hard"
+    grader_enabled: true
+    grader:
+      type: "llm_based"
+      system_prompt: "You are an expert nuanced evaluator. Score the completion on a scale from 0 to 1.\nCRITICAL: Output a float STRICTLY greater than 0 and STRICTLY less than 1 (example: 0.234). Never use 0.0 or 1.0.\nFirst give 1-sentence reasoning, then output ONLY: {\"score\": 0.XXX}"
+      user_prompt_template: "Task: {task_description}\n\nSubmission to score: {submission_output}"
