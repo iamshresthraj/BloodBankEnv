@@ -292,7 +292,7 @@ class BloodBankEnv:
 
     def get_grader_score(self) -> float:
         """The specific grader logic based on the task_id"""
-        if self.total_requests == 0: return 0.0
+        if self.total_requests == 0: return 0.001
         
         fulfillment_rate = self.fulfilled_requests / max(self.total_requests, 1)
         mismatch_penalty = 1.0 if self.mismatches > 0 else 0.0
@@ -315,7 +315,7 @@ class BloodBankEnv:
             
             score = (emergency_rate * 0.6) + (fulfillment_rate * 0.3) - (waste_rate * 0.1) - mismatch_penalty
 
-        return max(0.0, min(1.0, score)) # Normalize [0.0, 1.0]
+        return max(0.001, min(0.999, score)) # Normalize strictly within (0, 1)
 
     def state(self) -> State:
         ds_label = None
